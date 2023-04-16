@@ -2,10 +2,18 @@ import requests
 import json
 from datetime import datetime
 
+import configparser
+
+config = configparser.ConfigParser(interpolation=None)
+config.read("config.ini")
+
+name_of_community = config.get("COMMUNITY_NAME", "name")
+
+
 # define the GraphQL query
 query = """
 query ($cursor: String) {
-  repository(owner: "sunbird-lern", name: "community") {
+  repository(owner: "%s", name: "community") {
     discussions(first: 100, after: $cursor) {
       pageInfo {
         hasNextPage
@@ -18,11 +26,12 @@ query ($cursor: String) {
     }
   }
 }
-"""
+""" % name_of_community
+token_details = config.get("BEARER", "token")
 
 # set up HTTP headers
 url = "https://api.github.com/graphql"
-headers = {"Authorization": "Bearer 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"}
+headers = {"Authorization": "Bearer "+ token_details}
 
 def count_open_discussions(start_date, end_date):
     # set up GraphQL variables
